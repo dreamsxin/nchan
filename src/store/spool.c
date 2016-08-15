@@ -151,6 +151,7 @@ static ngx_inline void init_spool(channel_spooler_t *spl, subscriber_pool_t *spo
   spool->non_internal_sub_count = 0;
   spool->generation = 0;
   spool->responded_count = 0;
+  spool->garbage = 0;
   
   spool->spooler = spl;
 }
@@ -1009,6 +1010,7 @@ static ngx_int_t spool_rbtree_compare(void *v1, void *v2) {
 static ngx_int_t its_time_for_a_spooling(rbtree_seed_t *seed, subscriber_pool_t *spool, void *data) {
   ngx_int_t       rc;
   
+  assert(spool->garbage == 0);
   if(spool->msg_status == MSG_CHANNEL_NOTREADY) {
     spool->msg_status = MSG_INVALID;
     rc = spool_fetch_msg(spool);
@@ -1094,11 +1096,13 @@ static ngx_int_t remove_spool(subscriber_pool_t *spool) {
   DBG("remove spool node %p", node);
   
   assert(spool->spooler->running);
-  nchan_free_msg_id(&spool->id);
+  
   rbtree_remove_node(&spl->spoolseed, rbtree_node_from_data(spool));
 
-  //assert((node = rbtree_find_node(&spl->spoolseed, &spool->id)) == NULL);
   //double-check that it's gone 
+  assert((node = rbtree_find_node(&spl->spoolseed, &spool->id)) == NULL);
+  
+  nchan_free_msg_id(&spool->id);
   
   return NGX_OK;
 }
@@ -1122,6 +1126,7 @@ static ngx_int_t destroy_spool(subscriber_pool_t *spool) {
   assert(spool->first == NULL);
   
   ngx_memset(spool, 0x42, sizeof(*spool)); //debug
+  spool->garbage = 1;
   
   rbtree_destroy_node(seed, node);
   return NGX_OK;

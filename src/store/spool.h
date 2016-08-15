@@ -30,6 +30,7 @@ struct subscriber_pool_s {
   ngx_uint_t                  non_internal_sub_count;
   ngx_uint_t                  generation;
   ngx_uint_t                  responded_count;
+  unsigned                    garbage:1;
   struct channel_spooler_s   *spooler;
 }; // subscriber_pool_t
 
