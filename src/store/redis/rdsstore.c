@@ -22,8 +22,8 @@
 
 #define REDIS_STALL_CHECK_TIME 0 //disable for now
 
-//#define DEBUG_LEVEL NGX_LOG_WARN
-#define DEBUG_LEVEL NGX_LOG_DEBUG
+#define DEBUG_LEVEL NGX_LOG_WARN
+//#define DEBUG_LEVEL NGX_LOG_DEBUG
 
 #define DBG(fmt, args...) ngx_log_error(DEBUG_LEVEL, ngx_cycle->log, 0, "REDISTORE: " fmt, ##args)
 #define ERR(fmt, args...) ngx_log_error(NGX_LOG_ERR, ngx_cycle->log, 0, "REDISTORE: " fmt, ##args)
@@ -461,7 +461,10 @@ static void redis_ping_callback(redisAsyncContext *c, void *r, void *privdata) {
   if(redisReplyOk(c, r)) {
     if(CHECK_REPLY_INT(reply)) {
       if(reply->integer < 1) {
-        ERR("failed to forward ping to sub_ctx");
+        ERR("%V failed to forward ping to sub_ctx", rdata->connect_url);
+      }
+      else {
+        ERR("%V forwarded ping to %i sub_ctx", rdata->connect_url, reply->integer);
       }
     }
     else {
@@ -1084,7 +1087,7 @@ static void redis_subscriber_callback(redisAsyncContext *c, void *r, void *privd
     el = reply->element[2];
     
     if(CHECK_REPLY_STRVAL(el, "ping") && str_match_redis_subscriber_channel(&pubsub_channel, &rdata->namespace)) {
-      DBG("got pinged");
+      DBG("%V got pinged on channel %V%V", rdata->connect_url, &rdata->namespace, &pubsub_channel);
     }
     else if(CHECK_REPLY_STR(el)) {
       uint32_t    array_sz;
