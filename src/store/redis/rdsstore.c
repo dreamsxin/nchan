@@ -2644,7 +2644,7 @@ static void redis_publish_message_send(rdstore_data_t *rdata, void *pd) {
   d->msglen = msgstr.len;
   
   
-  DBG("run message publish script on %V for channel id %V (ns \"%V\")", rdata->connect_url, d->channel_id, rdata->namespace);
+  DBG("run message publish script on %V for channel id %V (ns \"%V\")", rdata->connect_url, d->channel_id, &rdata->namespace);
   
   //input:  keys: [], values: [namespace, channel_id, time, message, content_type, eventsource_event, msg_ttl, max_msg_buf_size, pubsub_msgpacked_size_cutoff]
   //output: message_tag, channel_hash {ttl, time_last_seen, subscribers, messages}
