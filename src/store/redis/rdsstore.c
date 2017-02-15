@@ -1576,7 +1576,7 @@ void redis_associate_chanhead_with_rdata(rdstore_channel_head_t *head, rdstore_d
 ngx_int_t ensure_chanhead_pubsub_subscribed_if_needed(rdstore_channel_head_t *ch) {
   rdstore_data_t     *rdata;
   if(ch->pubsub_status != SUBBED && ch->rdt->storage_mode == REDIS_MODE_DISTRIBUTED && (rdata = redis_cluster_rdata_from_channel(ch)) != NULL) {
-    DBG("SUBSCRIBING to %b{channel:%b}:pubsub", STR(&rdata->namespace), STR(&ch->id));
+    DBG("SUBSCRIBING to %V{channel:%V}:pubsub", &rdata->namespace, &ch->id);
     ch->pubsub_status = SUBBING;
     redis_subscriber_command(rdata, redis_subscriber_callback, ch, "SUBSCRIBE %b{channel:%b}:pubsub", STR(&rdata->namespace), STR(&ch->id));
   }
