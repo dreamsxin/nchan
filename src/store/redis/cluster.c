@@ -279,7 +279,7 @@ static u_char *redis_scan_cluster_nodes_slots_string(ngx_str_t *str, u_char *cur
   slot_min = ngx_atoi(slot_min_str.data, slot_min_str.len);
   slot_max = ngx_atoi(slot_max_str.data, slot_max_str.len);
   
-  DBG("slots: %i - %i", slot_min, slot_max);
+  //DBG("slots: %i - %i", slot_min, slot_max);
   
   r->min = slot_min;
   r->max = slot_max;
@@ -655,7 +655,7 @@ static int check_cluster_slots_range_ok(redis_cluster_t *cluster) {
     range.min = keyslot_tree_node->range.max + 1;
     range.max = range.min;
   }
-  DBG("cluster range complete");
+  //DBG("cluster range complete");
   //print_cluster_slots(cluster);
   return 1;
 }
