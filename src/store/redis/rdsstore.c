@@ -1264,14 +1264,14 @@ static void redis_subscriber_callback(redisAsyncContext *c, void *r, void *privd
       }
     }
     
-    ERR("REDIS: PUB/SUB subscribed to %s (%i total)", reply->element[1]->str, reply->element[2]->integer);
+    DBG("PUB/SUB subscribed to %s (%i total) on %V", reply->element[1]->str, reply->element[2]->integer, rdata->connect_url);
   }
   else if(CHECK_REPLY_ARRAY_MIN_SIZE(reply, 3)
     && CHECK_REPLY_STRVAL(reply->element[0], "unsubscribe")
     && CHECK_REPLY_STR(reply->element[1])
     && CHECK_REPLY_INT(reply->element[2])) {
 
-    ERR("REDIS: PUB/SUB unsubscribed from %s (%i total)", reply->element[1]->str, reply->element[2]->integer);
+    DBG("PUB/SUB unsubscribed from %s (%i total) on %V", reply->element[1]->str, reply->element[2]->integer, rdata->connect_url);
     if(chanhead->pubsub_status == UNSUBBING) {
       chanhead->pubsub_status = UNSUBBED;
       free_chanhead(chanhead);
@@ -1576,7 +1576,7 @@ void redis_associate_chanhead_with_rdata(rdstore_channel_head_t *head, rdstore_d
 ngx_int_t ensure_chanhead_pubsub_subscribed_if_needed(rdstore_channel_head_t *ch) {
   rdstore_data_t     *rdata;
   if(ch->pubsub_status != SUBBED && ch->rdt->storage_mode == REDIS_MODE_DISTRIBUTED && (rdata = redis_cluster_rdata_from_channel(ch)) != NULL) {
-    DBG("SUBSCRIBING to %V{channel:%V}:pubsub", &rdata->namespace, &ch->id);
+    DBG("SUBSCRIBING to %V{channel:%V}:pubsub on %V", &rdata->namespace, &ch->id, rdata->connect_url);
     ch->pubsub_status = SUBBING;
     redis_subscriber_command(rdata, redis_subscriber_callback, ch, "SUBSCRIBE %b{channel:%b}:pubsub", STR(&rdata->namespace), STR(&ch->id));
   }
@@ -2643,6 +2643,8 @@ static void redis_publish_message_send(rdstore_data_t *rdata, void *pd) {
   }
   d->msglen = msgstr.len;
   
+  
+  DBG("run message publish script on %V for channel id %V (ns \"%V\")", rdata->connect_url, d->channel_id, rdata->namespace);
   
   //input:  keys: [], values: [namespace, channel_id, time, message, content_type, eventsource_event, msg_ttl, max_msg_buf_size, pubsub_msgpacked_size_cutoff]
   //output: message_tag, channel_hash {ttl, time_last_seen, subscribers, messages}
