@@ -464,7 +464,7 @@ static void redis_ping_callback(redisAsyncContext *c, void *r, void *privdata) {
         ERR("%V failed to forward ping to sub_ctx", rdata->connect_url);
       }
       else {
-        ERR("%V forwarded ping to %i sub_ctx", rdata->connect_url, reply->integer);
+        DBG("%V forwarded ping to %i sub_ctx", rdata->connect_url, reply->integer);
       }
     }
     else {
