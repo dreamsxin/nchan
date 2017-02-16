@@ -125,6 +125,17 @@ Publisher endpoints are Nginx config *locations* with the [*`nchan_publisher`*](
 
 Messages can be published to a channel by sending HTTP **POST** requests with the message contents to the *publisher endpoint* locations. You can also publish messages through a **Websocket** connection to the same location.
 
+```nginx
+  location /pub {
+    #example publisher location
+    nchan_publisher;
+    nchan_channel_id foo;
+    nchan_channel_group test;
+    nchan_message_buffer_length 50;
+    nchan_message_timeout 5m;
+  }
+```
+
 <!-- tag:publisher -->
 
 ### Publishing Messages
@@ -181,6 +192,16 @@ You can also can use differently-configured publisher locations to dynamically u
 Subscriber endpoints are Nginx config *locations* with the [*`nchan_subscriber`*](#nchan_subscriber) directive.
 
 Nchan supports several different kinds of subscribers for receiving messages: [*Websocket*](#websocket), [*EventSource*](#eventsource) (Server Sent Events),  [*Long-Poll*](#long-polling), [*Interval-Poll*](#interval-polling). [*HTTP chunked transfer*](#http-chunked-transfer), and [*HTTP multipart/mixed*](#http-multipart-mixed).
+
+```nginx
+  location /sub {
+    #example subscriber location
+    nchan_subscriber;
+    nchan_channel_id foo;
+    nchan_channel_group test;
+    nchan_subscriber_first_message oldest;
+  }
+```
 
 <!-- tag:subscriber -->
 
@@ -254,17 +275,19 @@ requests as subscribers, and all HTTP `POST` as publishers. One simple use case 
 ```nginx
   location = /pubsub {
     nchan_pubsub;
-    nchan_channel_id foobar;
+    nchan_channel_id foo;
+    nchan_channel_group test;
   }
 ```
 
-A more applicable setup may set different publisher and subscriber channel ids:
+A more interesting setup may set different publisher and subscriber channel ids:
 
 ```nginx
   location = /pubsub {
     nchan_pubsub;
     nchan_publisher_channel_id foo;
     nchan_subscriber_channel_id bar;
+    nchan_channel_group test;
   }
 ```
 
@@ -274,7 +297,7 @@ Here, subscribers will listen for messages on channel `foo`, and publishers will
 
 ## The Channel ID
 
-So far the examples have used static channel ids, which is not very useful in practice. It can be set to any nginx *variable*, such as a querystring argument, a header value, or a part of the location url:
+So far the examples have used static channel ids, which is not very useful. In practice, the channel id can be set to any nginx *variable*, such as a querystring argument, a header value, or a part of the location url:
 
 ```nginx
   location = /sub_by_ip {
@@ -298,6 +321,8 @@ So far the examples have used static channel ids, which is not very useful in pr
     nchan_channel_id $1; #first capture of the location match
   }
 ```
+
+I recommend using the last option, a channel id derived from the request URL via a regular expression. It makes things nice and RESTful.
 
 <!-- tag:channel-id -->
 
@@ -1074,7 +1099,7 @@ Additionally, `nchan_stub_status` data is also exposed as variables. These are a
   arguments: 2  
   default: `none (disabled)`  
   context: server, location, if  
-  > Most browser Websocket clients do not allow manually sending PINGs to the server. To overcome this oversight, this setting can be used to respond to set up a PING/PONG - like connection heartbeat. When the client sends the server messave <heartbeat_in> (PING), the server automatically responds with <heartbeat_out> (PONG).    
+  > Most browser Websocket clients do not allow manually sending PINGs to the server. To overcome this limitation, this setting can be used to set up a PING/PONG message/response connection heartbeat. When the client sends the server message *heartbeat_in* (PING), the server automatically responds with *heartbeat_out* (PONG).    
 
 - **nchan_websocket_ping_interval** `<number> (seconds)`  
   arguments: 1  
@@ -1204,12 +1229,6 @@ Additionally, `nchan_stub_status` data is also exposed as variables. These are a
   default: `get set delete`  
   context: location  
   > Group information and configuration location. GET request for group info, POST to set limits, DELETE to delete all channels in group.    
-
-- **nchan_group_location_list_channels** `[ on | off ]`  
-  arguments: 1  
-  default: `off`  
-  context: location  
-  > List channels in the group.    
 
 - **nchan_group_max_channels** `<number>`  
   arguments: 1  
