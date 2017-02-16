@@ -679,7 +679,7 @@ static void redis_nginx_connect_event_handler(const redisAsyncContext *ac, int s
 static void redis_nginx_disconnect_event_handler(const redisAsyncContext *ac, int status) {
   rdstore_data_t    *rdata = ac->data;
   
-  DBG("connection to redis for %V closed: %s", rdata->connect_url, ac->errstr);
+  DBG("connection to redis for %V (peername %V) closed: %s", rdata->connect_url, &rdata->connect_params.peername, ac->errstr);
   
   if(rdata->status == CONNECTED && !ngx_exiting && !ngx_quit && !rdata->shutting_down) {
     if(ac->err) {
@@ -812,7 +812,7 @@ static ngx_int_t rdata_set_peername(rdstore_data_t *rdata, redisAsyncContext *ct
   
   rdata->connect_params.peername.len = strlen(ipstr);
   
-  DBG("got peername %V", &rdata->connect_params.peername);
+  DBG("got peername %V from hostname %V rdata %p", &rdata->connect_params.peername, &rdata->connect_params.hostname, rdata);
   return NGX_OK;
 }
 
