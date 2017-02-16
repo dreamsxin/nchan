@@ -629,10 +629,10 @@ static void redis_load_script_callback(redisAsyncContext *ac, void *r, void *pri
           if(rdata->scripts_loaded_count == redis_lua_scripts_count) {
             
             if(rdata->generation == 0) {
-              nchan_log_notice( "Established connection to redis at %V.",    rdata->connect_url);
+              nchan_log_notice( "Established connection to redis at %V (peername %V).",    rdata->connect_url, &rdata->connect_params.peername);
             }
             else {
-              nchan_log_warning("Re-established connection to redis at %V.", rdata->connect_url);
+              nchan_log_warning("Re-established connection to redis at %V (peername %V).", rdata->connect_url, &rdata->connect_params.peername);
             }
             
             rdt_set_status(rdata, CONNECTED, NULL);
