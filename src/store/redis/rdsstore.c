@@ -2539,7 +2539,7 @@ static ngx_int_t redis_data_tree_exiter_stage2(rbtree_seed_t *seed, rdstore_data
 
 static ngx_int_t redis_data_tree_exiter_stage3(rbtree_seed_t *seed, rdstore_data_t *rdata, unsigned *chanheads) {
   
-  DBG("exiting3 rdata %p %V", rdata, rdata->connect_url);
+  DBG("exiting3 rdata %p %V (peername %V)", rdata, rdata->connect_url, &rdata->connect_params.peername);
   
   if(rdata->ctx)
     redis_nginx_force_close_context(&rdata->ctx);
